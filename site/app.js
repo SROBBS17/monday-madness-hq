@@ -5,7 +5,7 @@
     BRE: ['#E30613', 'Brentford'], CHE: ['#034694', 'Chelsea'], COV: ['#3EA6D6', 'Coventry'], CRY: ['#1B458F', 'Crystal Palace'],
     EVE: ['#003399', 'Everton'], FUL: ['#5b5b5b', 'Fulham'], HUL: ['#F5A12D', 'Hull'], IPS: ['#3A64A3', 'Ipswich'],
     LEE: ['#D4A800', 'Leeds'], LIV: ['#C8102E', 'Liverpool'], MCI: ['#4E9AD3', 'Man City'], MUN: ['#DA291C', 'Man Utd'],
-    NEW: ['#3a3a3a', 'Newcastle'], NFO: ['#DD0000', "Nott'm Forest"], SUN: ['#EB172B', 'Sunderland'], TOT: ['#132257', 'Spurs'], WHU: ['#7A263A', 'West Ham'],
+    NEW: ['#3a3a3a', 'Newcastle'], NFO: ['#DD0000', "Nott'm Forest"], SUN: ['#EB172B', 'Sunderland'], TOT: ['#132257', 'Spurs'], WHU: ['#7A263A', 'West Ham'], MLB: ['#0c2a5b', 'MLB'],
   };
   const CHIP_NAMES = { wildcard: 'Wildcard', freehit: 'Free Hit', bboost: 'Bench Boost', '3xc': 'Triple Captain' };
   const POS = { 1: 'GK', 2: 'DEF', 3: 'MID', 4: 'FWD' };
@@ -65,8 +65,8 @@
     out.push(E(20 - rx - .2, 22, 1.7, 2.5, sk2), E(20 + rx + .2, 22, 1.7, 2.5, sk2));
     out.push(E(20, 20.6, rx, 11.6, sk));
     if (a.facial === 'beard') out.push(P(`M${20 - rx + .1} 20.5C${20 - rx} 30 14 33.8 20 33.8S${20 + rx} 30 ${20 + rx - .1} 20.5C28.6 25.4 26 27.4 20 27.6 14 27.4 11.4 25.4 ${20 - rx + .1} 20.5Z`, fc));
-    if (a.facial === 'stubble') out.push(P(`M${20 - rx + .3} 22C${20 - rx + .4} 30 14.5 32.6 20 32.6S${20 + rx - .4} 30 ${20 + rx - .3} 22C28.4 26 26 27.6 20 27.8 14 27.6 11.6 26 ${20 - rx + .3} 22Z`, fc, { opacity: '.32' }));
-    if (a.facial === 'beard' || a.facial === 'stubble' || a.facial === 'moustache') out.push(P('M15.4 25.3c1.6-1.7 3.6-1.3 4.6-.4 1-.9 3-1.3 4.6.4-1.6.5-3.2.5-4.6.2-1.4.3-3 .3-4.6-.2Z', fc, a.facial === 'stubble' ? { opacity: '.45' } : null));
+    if (a.facial === 'stubble' || a.stubble) out.push(P(`M${20 - rx + .3} 22C${20 - rx + .4} 30 14.5 32.6 20 32.6S${20 + rx - .4} 30 ${20 + rx - .3} 22C28.4 26 26 27.6 20 27.8 14 27.6 11.6 26 ${20 - rx + .3} 22Z`, fc, { opacity: '.32' }));
+    if (a.facial === 'beard' || a.facial === 'stubble' || a.facial === 'moustache') out.push(P('M15.4 25.3c1.6-1.7 3.6-1.3 4.6-.4 1-.9 3-1.3 4.6.4-1.6.5-3.2.5-4.6.2-1.4.3-3 .3-4.6-.2Z', a.facial === 'moustache' && a.tacheColor ? a.tacheColor : fc, a.facial === 'stubble' ? { opacity: '.45' } : null));
     if (a.mouth === 'grin') out.push(P('M16.4 26.4Q20 31 23.6 26.4Z', '#3a1416'), P('M16.9 26.6Q20 27.6 23.1 26.6L22.8 27.6Q20 28.2 17.2 27.6Z', '#ffffff'));
     else if (a.mouth === 'smile') out.push(P('M16.8 26.6Q20 29.6 23.2 26.6Q20 28 16.8 26.6Z', '#3a1416'), P('M17.6 26.9Q20 27.6 22.4 26.9L22.1 27.4Q20 27.9 17.9 27.4Z', '#ffffff'));
     else out.push(P('M17.4 27.2Q20 27.9 22.6 27.2', 'none', { stroke: shade(a.skin, .55), 'stroke-width': '.8', 'stroke-linecap': 'round' }));
@@ -509,9 +509,9 @@
       if (!r) {
         if (!CLUB[c]) return;
         const fans = D.managers.filter((m) => m.club === c).map((m) => m.name);
-        const line = `${CLUB[c][1]} aren't in the Premier League this season.`;
+        const line = c === 'MLB' ? 'Major League Baseball. Wrong sport, wrong continent, still supported.' : `${CLUB[c][1]} aren't in the Premier League this season.`;
         const card = h('div', { class: 'result D' }, h('span', {}, clubBadge(c), fans.length ? h('span', { class: 'fan-tag', text: fans.join(', ') }) : null),
-          h('span', { class: 'score', text: 'No Premier League football' }), h('span', { class: 'line', text: line }));
+          h('span', { class: 'score', text: c === 'MLB' ? 'Baseball season' : 'No Premier League football' }), h('span', { class: 'line', text: line }));
         const btn = h('button', { class: 'copy', type: 'button', text: 'Copy for the group' });
         btn.addEventListener('click', () => copyText(btn, line));
         card.append(btn); res.append(card); return;
@@ -922,7 +922,11 @@
     let fresh = 0;
     const box = $('fixtures'); box.replaceChildren();
     if (!anyStarted) box.append(h('div', { class: 'card' }, h('p', { class: 'note', text: `GW${gw} hasn't kicked off yet. This fills up from the first whistle.` })));
-    match.filter((f) => f.started).forEach((f) => {
+    const ownedEls = new Set(D.managers.flatMap((m) => m.picks.map((k) => k.el)));
+    const involved = (f) => [...ownedEls].some((e) => [f.h, f.a].includes(player(e).t));
+    const started = match.filter((f) => f.started);
+    const quietFx = started.filter((f) => !involved(f));
+    started.filter(involved).forEach((f) => {
       const st = f.done ? 'FT' : `${f.mins}'`;
       const head = h('div', { class: 'fx-head' },
         h('span', { class: 'fx-team', text: (CLUB[f.h] || [, f.h])[1] }),
@@ -948,6 +952,10 @@
       sb.addEventListener('click', busy(sb, () => shareFixture(f, items)));
       box.append(h('div', { class: 'fx' }, head, items.length ? evs : h('div', { class: 'fx-quiet', text: 'Nothing to report yet.' }), h('div', { class: 'fx-foot' }, sb)));
     });
+    if (quietFx.length) {
+      box.append(h('div', { class: 'fx quiet-list' }, h('div', { class: 'ql-head', text: 'Other results · no league players involved' }),
+        quietFx.map((f) => h('div', { class: 'ql-row' }, h('span', { text: (CLUB[f.h] || [, f.h])[1] }), h('b', { text: `${f.hs ?? 0}-${f.as_ ?? 0}` }), h('span', { text: (CLUB[f.a] || [, f.a])[1] }), h('small', { text: f.done ? 'FT' : `${f.mins}'` })))));
+    }
     $('match-new').hidden = !fresh;
     $('match-new').textContent = `${fresh} new since you last looked`;
     clearTimeout(renderMatch.t);

@@ -4,9 +4,20 @@
   "contact": "Sam",
   "exclude_entries": [],
   "clubs": {
-    "8907310": "LIV"
+    "8907310": "LIV",
+    "555326": "BHA",
+    "2482837": "MUN",
+    "6001602": "CHE",
+    "8906579": "CHE",
+    "3512435": "MLB"
   },
-  "nicknames": {},
+  "nicknames": {
+    "8906579": "Dyl",
+    "9345093": "Tommy B",
+    "3512435": "Glyndinho",
+    "2482837": "Reubs",
+    "555326": "Gibbo"
+  },
   "avatars": {
     "8907310": {
       "skin": "#f2c4a8",
@@ -15,6 +26,55 @@
       "facial": "moustache",
       "facialColor": "#6b4428",
       "mouth": "grin"
+    },
+    "8906579": {
+      "skin": "#f0c4a6",
+      "hair": "#2a1d16",
+      "style": "swept",
+      "facial": "beard",
+      "facialColor": "#2e211a",
+      "mouth": "grin"
+    },
+    "9345093": {
+      "skin": "#e8b994",
+      "hair": "#2a1c14",
+      "style": "bald",
+      "facial": "beard",
+      "facialColor": "#2a1c14",
+      "mouth": "grin"
+    },
+    "3512435": {
+      "skin": "#f2c4a6",
+      "hair": "#a8673a",
+      "style": "swept",
+      "facial": "beard",
+      "facialColor": "#9a5a30",
+      "mouth": "smile"
+    },
+    "2482837": {
+      "skin": "#f0c2a4",
+      "hair": "#3a2a20",
+      "style": "bald",
+      "facial": "moustache",
+      "stubble": true,
+      "facialColor": "#3a2a20",
+      "mouth": "closed"
+    },
+    "6001602": {
+      "skin": "#f3c7aa",
+      "hair": "#5a3a24",
+      "style": "swept",
+      "facial": "none",
+      "mouth": "grin",
+      "round": true
+    },
+    "555326": {
+      "skin": "#f2c6a8",
+      "hair": "#c49a5c",
+      "style": "quiff",
+      "facial": "stubble",
+      "facialColor": "#b08a5a",
+      "mouth": "closed"
     }
   },
   "banter_clubs": [
