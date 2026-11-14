@@ -8,7 +8,22 @@
   },
   "nicknames": {},
   "avatars": {
-    "8907310": {"skin": "#f2c4a8", "hair": "#3b2a1e", "style": "swept", "facial": "moustache", "facialColor": "#6b4428", "mouth": "grin"}
+    "8907310": {
+      "skin": "#f2c4a8",
+      "hair": "#3b2a1e",
+      "style": "swept",
+      "facial": "moustache",
+      "facialColor": "#6b4428",
+      "mouth": "grin"
+    }
   },
-  "banter_clubs": ["ARS", "LIV", "CHE", "TOT", "MUN", "MCI"]
+  "banter_clubs": [
+    "ARS",
+    "LIV",
+    "CHE",
+    "TOT",
+    "MUN",
+    "MCI"
+  ],
+  "storage_prefix": "mmhq"
 }

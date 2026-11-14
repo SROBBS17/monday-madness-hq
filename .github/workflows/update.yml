@@ -30,7 +30,10 @@ jobs:
           key: fpl-cache-${{ github.run_id }}
           restore-keys: fpl-cache-
       - name: Stamp app version
-        run: sed -i "s/__V__/${GITHUB_SHA::8}/g" site/index.html site/app.js
+        run: |
+          sed -i "s/__V__/${GITHUB_SHA::8}/g" site/index.html site/app.js
+          NS=$(python3 -c "import json; print(json.load(open('config/league.json')).get('storage_prefix', 'hq'))")
+          sed -i "s/__NS__/${NS}/g" site/app.js
       - id: data
         name: Fetch FPL data
         env:

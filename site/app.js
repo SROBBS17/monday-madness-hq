@@ -9,8 +9,8 @@
   };
   const CHIP_NAMES = { wildcard: 'Wildcard', freehit: 'Free Hit', bboost: 'Bench Boost', '3xc': 'Triple Captain' };
   const POS = { 1: 'GK', 2: 'DEF', 3: 'MID', 4: 'FWD' };
-  // Each app on this web address keeps its own saved settings (the original keeps its old names).
-  const NS = /fpl-league-hq-/.test(location.pathname) ? 'lmbyf' : 'hq-' + location.pathname.replace(/[^a-z0-9]/gi, '');
+  // Each app on this web address keeps its own saved settings; the name comes from config at publish time.
+  const NS = '__NS__';
   const ME_KEY = `${NS}-me`;
   const APP_V = '__V__';
   const $ = (id) => document.getElementById(id);
