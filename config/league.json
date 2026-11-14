@@ -1,0 +1,14 @@
+{
+  "league_id": 2045824,
+  "site_title": "Monday Madness",
+  "contact": "Sam",
+  "exclude_entries": [],
+  "clubs": {
+    "8907310": "LIV"
+  },
+  "nicknames": {},
+  "avatars": {
+    "8907310": {"skin": "#f2c4a8", "hair": "#3b2a1e", "style": "swept", "facial": "moustache", "facialColor": "#6b4428", "mouth": "grin"}
+  },
+  "banter_clubs": ["ARS", "LIV", "CHE", "TOT", "MUN", "MCI"]
+}

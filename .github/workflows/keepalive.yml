@@ -1,0 +1,25 @@
+name: Keep scheduled updates switched on
+
+# GitHub pauses scheduled jobs in repositories with no commits for 60 days.
+# This records the date once a month so the league updates never stop.
+on:
+  schedule:
+    - cron: "17 6 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          date -u +%Y-%m-%d > .keepalive
+          git config user.name "league-hq-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .keepalive
+          git commit -m "Monthly keepalive" || exit 0
+          git push

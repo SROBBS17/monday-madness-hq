@@ -1,0 +1,59 @@
+name: Update league data
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      changed: ${{ steps.data.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/cache@v4
+        with:
+          path: .cache
+          key: fpl-cache-${{ github.run_id }}
+          restore-keys: fpl-cache-
+      - name: Stamp app version
+        run: sed -i "s/__V__/${GITHUB_SHA::8}/g" site/index.html site/app.js
+      - id: data
+        name: Fetch FPL data
+        env:
+          APP_VERSION: ${{ github.sha }}
+          PUBLISHED_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+          FORCE_DEPLOY: ${{ github.event_name != 'schedule' }}
+        run: python3 scripts/build_data.py
+      - if: steps.data.outputs.changed == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
