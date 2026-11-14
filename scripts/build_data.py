@@ -358,7 +358,7 @@ def main():
                   gw=gw, gw_finished=bool(cur and cur["finished"]), live=live_mode, next_gw=nxt["id"] if nxt else None,
                   next_deadline=nxt["deadline_time"] if nxt else None, finished_gws=finished_gws,
                   app_version=os.environ.get("APP_VERSION", "")[:8],
-                  banter_clubs=CFG.get("banter_clubs") or ["ARS", "LIV", "CHE", "TOT", "MUN"]),
+                  banter_clubs=CFG["banter_clubs"] if "banter_clubs" in CFG else ["ARS", "LIV", "CHE", "TOT", "MUN"]),
         managers=managers, history=history, awards=awards, transfers=transfers_out, months=months,
         players=players, pltable=pltable, last_result=last_result, fixtures=fixtures,
     )

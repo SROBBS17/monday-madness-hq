@@ -154,7 +154,7 @@
     const best = aw('transfer_best'); if (best.length) push('TRANSFER', `${nm(best[0].id)}: ${best[0].text}`);
     const mover = rows.filter((m) => m.last_rank && m.last_rank > m.rank).sort((a, b) => (b.last_rank - b.rank) - (a.last_rank - a.rank))[0];
     if (mover) push('CLIMBER', `${mover.name} up ${mover.last_rank - mover.rank} to ${ord(mover.rank)}`);
-    (D.meta.banter_clubs || []).forEach((c) => {
+    [...new Set([...(D.meta.banter_clubs || []), ...D.managers.map((m) => m.club).filter(Boolean)])].forEach((c) => {
       const r = D.last_result[c]; const t = D.pltable.find((x) => x.team === c); if (!r || !t) return;
       push(CLUB[c][1].toUpperCase(), `${r.res === 'W' ? 'beat' : r.res === 'L' ? 'lost to' : 'drew with'} ${(D.pltable.find((x) => x.team === r.opp) || { name: r.opp }).name} ${r.gf}-${r.ga}, now ${ord(t.pos)}`);
     });

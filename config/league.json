@@ -78,13 +78,6 @@
       "mouth": "closed"
     }
   },
-  "banter_clubs": [
-    "ARS",
-    "LIV",
-    "CHE",
-    "TOT",
-    "MUN",
-    "MCI"
-  ],
+  "banter_clubs": [],
   "storage_prefix": "mmhq"
 }
