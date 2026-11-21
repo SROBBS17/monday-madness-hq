@@ -213,8 +213,10 @@ def main():
         for g in hist_full[i]:
             if g["event"] == 1:
                 continue
-            if by_gw.get(g["event"]) not in ("wildcard", "freehit"):
-                ft = max(ft - g["event_transfers"], 0)
+            if by_gw.get(g["event"]) in ("wildcard", "freehit"):
+                # Banked transfers are kept through a Wildcard/Free Hit, but no +1 that week.
+                continue
+            ft = max(ft - g["event_transfers"], 0)
             ft = min(ft + 1, 5)
         last = h["current"][-1] if h["current"] else {"bank": 0, "value": 1000, "overall_rank": None}
         pd = picks.get((i, gw))
