@@ -236,6 +236,8 @@ def main():
             subs=live_points[i]["subs"] if i in live_points else [],
         ))
         for g in h["current"]:
+            if g["event"] == gw and not cur_started:
+                continue  # after the deadline, before kick-off: nothing to chart yet
             pdg = picks.get((i, g["event"]))
             cap = next((k for k in pdg["picks"] if k["is_captain"]), None) if pdg else None
             cap_pts = live[g["event"]].get(cap["element"], {}).get("total_points", 0) * cap["multiplier"] if cap else 0
