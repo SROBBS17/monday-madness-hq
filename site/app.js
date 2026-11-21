@@ -201,7 +201,13 @@
     renderTicker();
     $('contact').textContent = m.contact ? `Rather not be on here? Message ${m.contact} and you'll be removed at the next update.` : '';
   }
+  function matchUpdated() {
+    const el = $('match-updated'); if (!el || !D) return;
+    const at = new Date(D.meta.updated_at), mins = Math.max(0, Math.round((Date.now() - at) / 6e4));
+    el.textContent = `Last updated ${fmtTime(D.meta.updated_at, { hour: '2-digit', minute: '2-digit' })} (${mins < 1 ? 'just now' : mins === 1 ? '1 min ago' : `${mins} mins ago`})${D.meta.live ? ' · checking every 30s' : ''}`;
+  }
   function tick() {
+    matchUpdated();
     const m = D && D.meta;
     if (!m || !m.next_deadline) return;
     const ms = new Date(m.next_deadline) - Date.now();
@@ -917,7 +923,8 @@
     const gw = D.meta.gw, match = D.match || [];
     const anyStarted = match.some((f) => f.started);
     $('match-title').textContent = D.meta.live ? `GW${gw} live` : D.meta.gw_finished ? `GW${gw}: full time` : `GW${gw}`;
-    $('match-note').textContent = D.meta.live ? 'Scores, scorers and bonus as they happen, with who in the league each one affects. Updates about every 10 minutes.' : 'Every goal, assist, card and bonus from the last gameweek, and who in the league it hit.';
+    $('match-note').textContent = D.meta.live ? 'Scores, scorers and bonus as they happen, with who in the league each one affects. FPL publishes points a minute or two after the action.' : 'Every goal, assist, card and bonus from the last gameweek, and who in the league it hit.';
+    matchUpdated();
     const seenKey = `${NS}-seen-${gw}`;
     let seen = null; try { seen = JSON.parse(store.get(seenKey) || 'null'); } catch (e) { seen = null; }
     const seenSet = new Set(seen || []);
@@ -1142,9 +1149,9 @@
         g.fillStyle = good ? 'rgba(255,191,31,.14)' : 'rgba(255,61,110,.12)'; g.fillRect(60, y, W - 120, rh - 12);
         g.fillStyle = good ? '#ffbf1f' : '#ff3d6e'; g.fillRect(60, y, 10, rh - 12);
         const names = grp.map((a) => M.get(a.id)?.name).filter(Boolean);
-        const shown = grp.slice(0, 4);
-        shown.forEach((a, j) => { const im = imgs.get(a.id); if (im) g.drawImage(im, 92 + j * 46, y + (rh - 12) / 2 - 34, 59, 68); });
-        const tx = 92 + Math.min(4, shown.length) * 46 + 44;
+        const span = Math.min(240, 59 + (grp.length - 1) * 46);
+        headRow(g, imgs, grp.map((a) => a.id), 92, y + (rh - 12) / 2 - 34, span, 59, 68);
+        const tx = 92 + span + 30;
         fill(g, grp[0].label.toUpperCase(), tx, y + rh * .38, TEKO(40), good ? '#ffbf1f' : '#ff3d6e', 'left', W - tx - 80);
         fill(g, names.length > 3 ? `${names.length} MANAGERS` : names.join(' & ').toUpperCase(), tx, y + rh * .7, TEKO(50), '#ffffff', 'left', W - tx - 260);
         fill(g, names.length > 3 ? grp[0].text : grp[0].text, W - 90, y + rh * .7, ARCH(22, 600), 'rgba(255,255,255,.7)', 'right', 300);
@@ -1152,6 +1159,13 @@
       footer(g, W, H);
     }, `awards-gw${gw}.png`, `GW${gw} awards`);
   }
+  // Every manager's head in a row; overlaps only if there are too many to fit.
+  function headRow(g, imgs, ids, x, y, maxW, w = 48, h = 55) {
+    const step = ids.length > 1 ? Math.min(w + 6, (maxW - w) / (ids.length - 1)) : 0;
+    ids.forEach((id, j) => { const im = imgs.get(id); if (im) g.drawImage(im, x + j * step, y, w, h); });
+  }
+  const fixtureShareRows = (items) => { const owned = items.filter((it) => ownersOf(it.el).length).slice(0, 7); return owned.length ? owned : items.slice(0, 7); };
+  const rowH = (it) => (ownersOf(it.el).length ? 186 : 118);
   async function shareFixture(f, items) {
     const ownerIds = new Set(); items.forEach((it) => ownersOf(it.el).forEach((o) => ownerIds.add(o.m.id)));
     const imgs = await crestImages([...ownerIds].map((id) => M.get(id)));
@@ -1164,22 +1178,23 @@
       g.fillStyle = 'rgba(3,4,13,.75)'; g.fillRect(W / 2 - 120, 90, 240, 170);
       fill(g, `${f.hs ?? 0}-${f.as_ ?? 0}`, W / 2, 210, TEKO(130), '#ffffff');
       fill(g, f.done ? 'FULL TIME' : `${f.mins}'`, W / 2, 248, ARCH(24, 800), f.done ? '#9aa3d6' : '#ff2448');
-      const owned = items.filter((it) => ownersOf(it.el).length).slice(0, 7);
-      const rows = owned.length ? owned : items.slice(0, 7);
-      rows.forEach((it, i) => {
-        const y = 340 + i * 118, o = ownersOf(it.el);
-        g.fillStyle = 'rgba(255,255,255,.07)'; g.fillRect(60, y, W - 120, 104);
+      const rows = fixtureShareRows(items);
+      let y = 340;
+      rows.forEach((it) => {
+        const o = ownersOf(it.el), rh = rowH(it);
+        g.fillStyle = 'rgba(255,255,255,.07)'; g.fillRect(60, y, W - 120, rh - 14);
         fill(g, it.ico, 110, y + 66, TEKO(52), it.cls === 'bonus' ? '#ffbf1f' : ['red', 'pen_miss', 'own_goal'].includes(it.cls) ? '#ff3d6e' : '#22e6a8');
         fill(g, it.text.toUpperCase(), 170, y + 50, TEKO(46), '#ffffff', 'left', W - 260);
         if (o.length) {
           const caps = o.filter((x) => x.cap).length;
           const who = o.map((x) => x.m.name + (x.cap ? ' (C)' : '')).join(', ');
-          fill(g, `Owned by ${o.length}${caps ? `, captained by ${caps}` : ''}: ${who}`, 170, y + 86, ARCH(22, 600), 'rgba(255,255,255,.75)', 'left', W - 260 - Math.min(5, o.length) * 46);
-          o.slice(0, 5).forEach((x, j) => { const im = imgs.get(x.m.id); if (im) g.drawImage(im, W - 80 - (Math.min(5, o.length) - j) * 46, y + 18, 42, 48); });
+          fill(g, `Owned by ${o.length}${caps ? `, captained by ${caps}` : ''}: ${who}`, 170, y + 86, ARCH(22, 600), 'rgba(255,255,255,.75)', 'left', W - 260);
+          headRow(g, imgs, o.map((x) => x.m.id), 170, y + 104, W - 270);
         } else fill(g, 'Nobody in the league owns him', 170, y + 86, ARCH(22, 600), 'rgba(255,255,255,.5)', 'left');
+        y += rh;
       });
       footer(g, W, H);
-    }, `${f.h}-${f.a}.png`, `${f.h} ${f.hs}-${f.as_} ${f.a}`, Math.max(760, 340 + Math.min(7, items.filter((it) => ownersOf(it.el).length).length || Math.min(7, items.length)) * 118 + 170));
+    }, `${f.h}-${f.a}.png`, `${f.h} ${f.hs}-${f.as_} ${f.a}`, Math.max(760, 340 + fixtureShareRows(items).reduce((t, it) => t + rowH(it), 0) + 170));
   }
   async function shareFdr() {
     const next = D.fixtures.filter((f) => f.gw >= (D.meta.next_gw || D.meta.gw));
