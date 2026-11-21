@@ -188,8 +188,9 @@
     const m = D.meta;
     document.title = `${m.title} HQ`;
     $('title').textContent = m.title;
-    $('kicker').textContent = m.live ? `Gameweek ${m.gw} in play` : `Mini-league HQ · ${D.managers.length} managers`;
-    $('gw-pill').textContent = m.live ? `GW${m.gw}` : `GW${m.gw} done`;
+    const pre = !m.live && !m.gw_finished; // after the deadline, before the first kick-off
+    $('kicker').textContent = m.live ? `Gameweek ${m.gw} in play` : pre ? `Gameweek ${m.gw} kicks off soon` : `Mini-league HQ · ${D.managers.length} managers`;
+    $('gw-pill').textContent = m.live ? `GW${m.gw}` : pre ? `GW${m.gw} up next` : `GW${m.gw} done`;
     $('live-pill').hidden = !m.live;
     const mine = M.get(me);
     $('me-chip').textContent = mine ? `You: ${mine.name}` : 'Pick your team';
@@ -217,7 +218,9 @@
     const gwRows = D.managers.slice().sort((a, b) => b.gw_points - a.gw_points);
     const mine = M.get(me);
     hero.append(
-      h('div', { class: 'stat feature' }, h('span', { class: 'lab', text: D.meta.live ? `Leading GW${D.meta.gw} (live)` : `Won GW${D.meta.gw}` }), h('span', { class: 'big', text: gwRows[0].name }), h('span', { class: 'sub', text: `${gwRows[0].gw_points} points` })),
+      (!D.meta.live && !D.meta.gw_finished)
+        ? h('div', { class: 'stat feature' }, h('span', { class: 'lab', text: `GW${D.meta.gw}` }), h('span', { class: 'big', text: 'Teams locked' }), h('span', { class: 'sub', text: 'Live points from the first whistle' }))
+        : h('div', { class: 'stat feature' }, h('span', { class: 'lab', text: D.meta.live ? `Leading GW${D.meta.gw} (live)` : `Won GW${D.meta.gw}` }), h('span', { class: 'big', text: gwRows[0].name }), h('span', { class: 'sub', text: `${gwRows[0].gw_points} points` })),
     );
     if (mine) {
       const gap = leader.total - mine.total;
@@ -742,7 +745,7 @@
     store.set(`${NS}-intro`, today);
     const el = $('intro');
     $('intro-name').textContent = D.meta.title;
-    $('intro-kicker').textContent = D.meta.live ? `Gameweek ${D.meta.gw} · Live` : `Gameweek ${D.meta.next_gw || D.meta.gw}`;
+    $('intro-kicker').textContent = D.meta.live ? `Gameweek ${D.meta.gw} · Live` : `Gameweek ${D.meta.gw_finished ? (D.meta.next_gw || D.meta.gw) : D.meta.gw}`;
     el.hidden = false;
     requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('play')));
     let ended = false;
@@ -1077,7 +1080,7 @@
     const imgs = await crestImages(rows);
     shareImage((g, W, H) => {
       stadium(g, W, H, '#1b2370', '#070a1f');
-      title(g, W, D.meta.live ? `GAMEWEEK ${D.meta.gw} · LIVE` : `AFTER GAMEWEEK ${D.meta.gw}`, 'THE TABLE');
+      title(g, W, D.meta.live ? `GAMEWEEK ${D.meta.gw} · LIVE` : `AFTER GAMEWEEK ${D.meta.gw_finished ? D.meta.gw : D.meta.gw - 1}`, 'THE TABLE');
       const top = 280, rh = 84;
       rows.forEach((m, i) => {
         const y = top + i * rh, mv = (m.last_rank ?? m.rank) - m.rank;
