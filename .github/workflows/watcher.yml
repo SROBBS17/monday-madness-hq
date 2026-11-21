@@ -1,7 +1,7 @@
 name: Watch for FPL changes
 
 # GitHub's own timer often skips frequent schedules, so this job stays awake,
-# checks the FPL data every 5 minutes and asks the update workflow to publish
+# checks the FPL data every minute and asks the update workflow to publish
 # whenever something changed. Near its 6-hour limit it starts a fresh copy of itself.
 on:
   workflow_dispatch:
@@ -37,8 +37,8 @@ jobs:
             rc=0; python3 scripts/build_data.py || rc=$?
             if [ "$rc" = "0" ]; then
               gh workflow run update.yml --repo "$REPO" --ref main
-              sleep 120
+              sleep 90   # let that build publish before checking again
             fi
-            sleep 300
+            sleep 60
           done
           gh workflow run watcher.yml --repo "$REPO" --ref main

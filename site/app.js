@@ -1263,7 +1263,13 @@
   me = saved ? +saved : null;
   load(true);
   setInterval(tick, 30000);
-  setInterval(() => { if (document.visibilityState === 'visible') load(false); }, 120000);
+  // Poll every 30s while games are live (every 2 min otherwise).
+  let lastPoll = 0;
+  setInterval(() => {
+    if (document.visibilityState !== 'visible') return;
+    const every = D && D.meta.live ? 30000 : 120000;
+    if (Date.now() - lastPoll >= every) { lastPoll = Date.now(); load(false); }
+  }, 10000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') load(false); });
   let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (D) { buildReplay(); drawRivals(); } }, 200); });
 })();
