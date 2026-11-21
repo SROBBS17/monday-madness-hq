@@ -390,4 +390,15 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (urllib.error.URLError, TimeoutError) as e:
+        # FPL goes offline for a while after every deadline ("The game is being
+        # updated", HTTP 503). Keep the current site and try again next run,
+        # instead of failing the workflow (which emails the owner).
+        print(f"FPL unavailable ({e}); keeping the current site, will retry next run.")
+        if os.environ.get("CHECK_ONLY"):
+            sys.exit(3)
+        if os.environ.get("GITHUB_OUTPUT"):
+            with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+                fh.write("changed=false\n")
