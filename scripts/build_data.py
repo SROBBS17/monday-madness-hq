@@ -138,8 +138,13 @@ def main():
     nxt = next((e for e in events if e["is_next"]), None)
     gw = cur["id"] if cur else 0
     cur_started = bool(cur) and any(f["started"] for f in F if f["event"] == gw)
-    live_mode = bool(cur) and not cur["finished"] and cur_started
-    finished_gws = [e["id"] for e in events if e["finished"]]
+    # FPL can take a day or two to flag a gameweek "finished" after the last game.
+    # Treat it as done as soon as every fixture is over with bonus confirmed.
+    gw_fx = [f for f in F if f["event"] == gw]
+    fixtures_done = bool(gw_fx) and all(f["finished"] for f in gw_fx)
+    live_mode = bool(cur) and not cur["finished"] and cur_started and not fixtures_done
+    official_finished = [e["id"] for e in events if e["finished"]]   # safe to cache forever
+    finished_gws = official_finished + ([gw] if fixtures_done and gw not in official_finished else [])
     teams = {t["id"]: t for t in B["teams"]}
     T = {t["id"]: t["short_name"] for t in B["teams"]}
     P = {p["id"]: p for p in B["elements"]}
@@ -161,14 +166,14 @@ def main():
     finished_gws = [g for g in finished_gws if g >= start]
 
     def picks_for(i, g):
-        name = f"picks_{i}_{g}.json" if g in finished_gws else None
+        name = f"picks_{i}_{g}.json" if g in official_finished else None
         try:
             return get(f"entry/{i}/event/{g}/picks/", name)
         except urllib.error.HTTPError:
             return None
 
     def live_for(g):
-        return get(f"event/{g}/live/", f"live_{g}.json" if g in finished_gws else None)
+        return get(f"event/{g}/live/", f"live_{g}.json" if g in official_finished else None)
 
     gws = [g for g in range(start, gw + 1)]
     live = {g: {e["id"]: e["stats"] for e in live_for(g)["elements"]} for g in gws}
@@ -359,7 +364,7 @@ def main():
     data = dict(
         match=match,
         meta=dict(title=CFG.get("site_title") or L["league"]["name"], league=L["league"]["name"], contact=CFG.get("contact", ""),
-                  gw=gw, gw_finished=bool(cur and cur["finished"]), live=live_mode, next_gw=nxt["id"] if nxt else None,
+                  gw=gw, gw_finished=bool(cur and (cur["finished"] or fixtures_done)), live=live_mode, next_gw=nxt["id"] if nxt else None,
                   next_deadline=nxt["deadline_time"] if nxt else None, finished_gws=finished_gws,
                   app_version=os.environ.get("APP_VERSION", "")[:8],
                   banter_clubs=CFG["banter_clubs"] if "banter_clubs" in CFG else ["ARS", "LIV", "CHE", "TOT", "MUN"]),
